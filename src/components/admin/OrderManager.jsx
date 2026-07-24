@@ -109,6 +109,9 @@ export default function OrderManager() {
           toEmail: order.email,
           customerName: order.customer_name,
           trackingCode: order.tracking_code,
+          delivery: order.delivery_zone_name
+            ? `${order.delivery_zone_name}-(${order.delivery_charge})`
+            : "N/A",
           orderId: order.id,
           items,
         });
