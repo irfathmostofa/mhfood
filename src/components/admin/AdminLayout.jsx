@@ -1,13 +1,14 @@
-import { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { supabase } from '../../lib/supabaseClient';
+import { useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { supabase } from "../../lib/supabaseClient";
 
 const navItems = [
-  { to: '/admin', label: 'Dashboard', end: true },
-  { to: '/admin/products', label: 'Products' },
-  { to: '/admin/slider', label: 'Hero Slider' },
-  { to: '/admin/orders', label: 'Orders' },
-  { to: '/admin/settings', label: 'Settings' },
+  { to: "/admin", label: "Dashboard", end: true },
+  { to: "/admin/products", label: "Products" },
+  { to: "/admin/slider", label: "Hero Slider" },
+  { to: "/admin/orders", label: "Orders" },
+  { to: "/admin/settings", label: "Settings" },
+  { to: "/", label: "Visit Website" },
 ];
 
 export default function AdminLayout({ children }) {
@@ -16,7 +17,7 @@ export default function AdminLayout({ children }) {
 
   async function handleLogout() {
     await supabase.auth.signOut();
-    navigate('/admin/login');
+    navigate("/admin/login");
   }
 
   function handleNavClick() {
@@ -32,11 +33,20 @@ export default function AdminLayout({ children }) {
           aria-label="Open menu"
           className="p-2 -ml-2 rounded-md hover:bg-slate-800"
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <path d="M3 6h18M3 12h18M3 18h18" strokeLinecap="round" />
           </svg>
         </button>
-        <span className="font-semibold text-sm tracking-tight">Admin Panel</span>
+        <span className="font-semibold text-sm tracking-tight">
+          Admin Panel
+        </span>
         <div className="w-8" />
       </div>
 
@@ -51,7 +61,7 @@ export default function AdminLayout({ children }) {
       {/* Sidebar — fixed drawer on mobile, static column on desktop */}
       <aside
         className={`fixed lg:static inset-y-0 left-0 z-50 w-60 shrink-0 bg-slate-900 text-slate-300 flex flex-col transform transition-transform duration-200 lg:translate-x-0 ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="px-6 py-5 text-white font-semibold text-lg tracking-tight border-b border-slate-800 flex items-center justify-between">
@@ -61,7 +71,14 @@ export default function AdminLayout({ children }) {
             aria-label="Close menu"
             className="lg:hidden p-1 -mr-1 rounded-md hover:bg-slate-800"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" />
             </svg>
           </button>
@@ -76,8 +93,8 @@ export default function AdminLayout({ children }) {
               className={({ isActive }) =>
                 `block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-emerald-600 text-white'
-                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                    ? "bg-emerald-600 text-white"
+                    : "text-slate-300 hover:bg-slate-800 hover:text-white"
                 }`
               }
             >

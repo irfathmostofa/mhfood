@@ -7,14 +7,6 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-40 bg-[#FBF8F3]/90 backdrop-blur border-b border-[#E7E0D3]">
       <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
-        <Link
-          to="/"
-          className="font-display text-xl tracking-tight text-[#1F2A24]"
-          style={{ fontFamily: "'Fraunces', Georgia, serif" }}
-        >
-          MHFood
-        </Link>
-
         <nav className="hidden sm:flex items-center gap-8 text-sm text-[#4A5049]">
           <Link to="/" className="hover:text-[#1F2A24] transition-colors">
             Shop
@@ -23,7 +15,19 @@ export default function Navbar() {
             Track Order
           </Link>
         </nav>
-
+        <Link
+          to="/"
+          className="font-display text-xl tracking-tight text-[#1F2A24]"
+          style={{ fontFamily: "'Fraunces', Georgia, serif" }}
+        >
+          {/* logo */}
+          <img
+            src="/mhfood.png"
+            alt="MHFood Logo"
+            className="h-14 w-auto inline-block mr-2"
+          />
+          {/* MHFood */}
+        </Link>
         <button
           onClick={openCart}
           className="relative flex items-center gap-2 px-4 py-2 rounded-full text-[#1F2A24] text-sm font-medium  transition-colors"

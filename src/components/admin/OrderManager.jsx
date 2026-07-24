@@ -1,25 +1,25 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { supabase } from '../../lib/supabaseClient';
-import { sendOrderDeliveredEmail } from '../../lib/emailjs';
-import { sendOrderDeliveredSMS } from '../../lib/sms';
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { supabase } from "../../lib/supabaseClient";
+import { sendOrderDeliveredEmail } from "../../lib/emailjs";
+import { sendOrderDeliveredSMS } from "../../lib/sms";
 
-const STATUS_FLOW = ['pending', 'confirmed', 'out_for_delivery', 'delivered'];
+const STATUS_FLOW = ["pending", "confirmed", "out_for_delivery", "delivered"];
 
 const STATUS_LABELS = {
-  pending: 'Received',
-  confirmed: 'Confirmed',
-  out_for_delivery: 'Out for Delivery',
-  delivered: 'Delivered',
-  cancelled: 'Cancelled',
+  pending: "Received",
+  confirmed: "Confirmed",
+  out_for_delivery: "Out for Delivery",
+  delivered: "Delivered",
+  cancelled: "Cancelled",
 };
 
 const STATUS_COLORS = {
-  pending: 'bg-slate-100 text-slate-700',
-  confirmed: 'bg-blue-100 text-blue-700',
-  out_for_delivery: 'bg-amber-100 text-amber-700',
-  delivered: 'bg-emerald-100 text-emerald-700',
-  cancelled: 'bg-red-100 text-red-700',
+  pending: "bg-slate-100 text-slate-700",
+  confirmed: "bg-blue-100 text-blue-700",
+  out_for_delivery: "bg-amber-100 text-amber-700",
+  delivered: "bg-emerald-100 text-emerald-700",
+  cancelled: "bg-red-100 text-red-700",
 };
 
 const PAGE_SIZE = 10;
@@ -28,7 +28,7 @@ export default function OrderManager() {
   const [orders, setOrders] = useState([]);
   const [expandedId, setExpandedId] = useState(null);
   const [orderItems, setOrderItems] = useState({});
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState("all");
   const [updatingId, setUpdatingId] = useState(null);
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
@@ -38,12 +38,12 @@ export default function OrderManager() {
     setLoading(true);
 
     let query = supabase
-      .from('orders')
-      .select('*', { count: 'exact' })
-      .order('created_at', { ascending: false });
+      .from("orders")
+      .select("*", { count: "exact" })
+      .order("created_at", { ascending: false });
 
-    if (filter !== 'all') {
-      query = query.eq('status', filter);
+    if (filter !== "all") {
+      query = query.eq("status", filter);
     }
 
     const from = page * PAGE_SIZE;
@@ -79,9 +79,9 @@ export default function OrderManager() {
 
     if (!orderItems[order.id]) {
       const { data } = await supabase
-        .from('order_items')
-        .select('*')
-        .eq('order_id', order.id);
+        .from("order_items")
+        .select("*")
+        .eq("order_id", order.id);
       setOrderItems((prev) => ({ ...prev, [order.id]: data || [] }));
     }
   }
@@ -90,17 +90,17 @@ export default function OrderManager() {
     setUpdatingId(order.id);
 
     const { error } = await supabase
-      .from('orders')
+      .from("orders")
       .update({ status: newStatus })
-      .eq('id', order.id);
+      .eq("id", order.id);
 
-    if (!error && newStatus === 'delivered') {
+    if (!error && newStatus === "delivered") {
       let items = orderItems[order.id];
       if (!items) {
         const { data } = await supabase
-          .from('order_items')
-          .select('*')
-          .eq('order_id', order.id);
+          .from("order_items")
+          .select("*")
+          .eq("order_id", order.id);
         items = data || [];
       }
 
@@ -113,7 +113,9 @@ export default function OrderManager() {
           items,
         });
       } catch (err) {
-        alert('Order marked as delivered, but the review-request email failed to send.');
+        alert(
+          "Order marked as delivered, but the review-request email failed to send.",
+        );
       }
 
       sendOrderDeliveredSMS({
@@ -136,7 +138,9 @@ export default function OrderManager() {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-slate-900">Orders ({totalCount})</h2>
+        <h2 className="text-lg font-semibold text-slate-900">
+          Orders ({totalCount})
+        </h2>
         <select
           value={filter}
           onChange={(e) => handleFilterChange(e.target.value)}
@@ -158,7 +162,10 @@ export default function OrderManager() {
         ) : (
           <>
             {orders.map((order) => (
-              <div key={order.id} className="border border-slate-200 rounded-lg overflow-hidden">
+              <div
+                key={order.id}
+                className="border border-slate-200 rounded-lg overflow-hidden"
+              >
                 <button
                   onClick={() => toggleExpand(order)}
                   className="w-full flex items-center justify-between gap-4 px-4 py-3 hover:bg-slate-50 transition-colors text-left"
@@ -168,7 +175,7 @@ export default function OrderManager() {
                       {order.customer_name} — {order.tracking_code}
                     </p>
                     <p className="text-xs text-slate-400">
-                      {order.phone} · ৳{order.total_amount} ·{' '}
+                      {order.phone} · ৳{order.total_amount} ·{" "}
                       {new Date(order.created_at).toLocaleString()}
                     </p>
                   </div>
@@ -181,9 +188,11 @@ export default function OrderManager() {
 
                 {expandedId === order.id && (
                   <div className="px-4 pb-4 pt-1 border-t border-slate-100 bg-slate-50">
-                    <p className="text-xs text-slate-500 mb-3">{order.address}</p>
+                    <p className="text-xs text-slate-500 mb-3">
+                      {order.address}
+                    </p>
 
-                    <ul className="text-sm text-slate-700 space-y-1 mb-4">
+                    <ul className="text-sm text-slate-700 space-y-1 mb-2">
                       {(orderItems[order.id] || []).map((item) => (
                         <li key={item.id}>
                           {item.product_name} × {item.quantity} — ৳{item.price}
@@ -191,11 +200,22 @@ export default function OrderManager() {
                       ))}
                     </ul>
 
+                    {order.delivery_charge > 0 && (
+                      <p className="text-sm text-slate-500 mb-4">
+                        Delivery
+                        {order.delivery_zone_name
+                          ? ` (${order.delivery_zone_name})`
+                          : ""}
+                        : ৳{order.delivery_charge}
+                      </p>
+                    )}
+
                     <div className="flex flex-wrap gap-2">
                       {STATUS_FLOW.map((status, i) => {
                         const currentIndex = STATUS_FLOW.indexOf(order.status);
                         const isCurrent = order.status === status;
-                        const isPast = currentIndex > i && order.status !== 'cancelled';
+                        const isPast =
+                          currentIndex > i && order.status !== "cancelled";
 
                         return (
                           <button
@@ -204,21 +224,22 @@ export default function OrderManager() {
                             onClick={() => updateStatus(order, status)}
                             className={`text-xs font-medium px-3 py-1.5 rounded-md transition-colors ${
                               isCurrent
-                                ? 'bg-emerald-600 text-white cursor-default'
+                                ? "bg-emerald-600 text-white cursor-default"
                                 : isPast
-                                ? 'bg-slate-200 text-slate-500 hover:bg-slate-300'
-                                : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100'
+                                  ? "bg-slate-200 text-slate-500 hover:bg-slate-300"
+                                  : "bg-white border border-slate-300 text-slate-700 hover:bg-slate-100"
                             }`}
                           >
                             {STATUS_LABELS[status]}
                           </button>
                         );
                       })}
-                      {order.status !== 'cancelled' && (
+                      {order.status !== "cancelled" && (
                         <button
                           disabled={updatingId === order.id}
                           onClick={() => {
-                            if (confirm('Cancel this order?')) updateStatus(order, 'cancelled');
+                            if (confirm("Cancel this order?"))
+                              updateStatus(order, "cancelled");
                           }}
                           className="text-xs font-medium px-3 py-1.5 rounded-md bg-white border border-red-300 text-red-600 hover:bg-red-50 transition-colors"
                         >
