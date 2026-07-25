@@ -123,17 +123,23 @@ export default function AdminInvoice() {
             <span>Subtotal</span>
             <span>৳{subtotal.toFixed(2)}</span>
           </div>
-          {order.delivery_charge > 0 && (
+          {Number(order.discount_amount) > 0 && (
             <div className="flex justify-between">
-              <span>
-                Delivery
-                {order.delivery_zone_name
-                  ? ` (${order.delivery_zone_name})`
-                  : ""}
-              </span>
-              <span>৳{Number(order.delivery_charge).toFixed(2)}</span>
+              <span>{order.discount_label || "Discount"}</span>
+              <span>-৳{Number(order.discount_amount).toFixed(2)}</span>
             </div>
           )}
+          <div className="flex justify-between">
+            <span>
+              Delivery
+              {order.delivery_zone_name ? ` (${order.delivery_zone_name})` : ""}
+            </span>
+            <span>
+              {Number(order.delivery_charge) === 0
+                ? "FREE"
+                : `৳${Number(order.delivery_charge).toFixed(2)}`}
+            </span>
+          </div>
           <div className="flex justify-between font-bold text-sm border-t border-slate-400 pt-1 mt-1">
             <span>Total</span>
             <span>৳{Number(order.total_amount).toFixed(2)}</span>

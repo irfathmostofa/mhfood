@@ -1,26 +1,30 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabaseClient';
+import { useEffect, useState } from "react";
+import { supabase } from "../../lib/supabaseClient";
 
 export default function ContactSettingsManager() {
   const [form, setForm] = useState({
-    whatsapp_number: '',
+    whatsapp_number: "",
     whatsapp_enabled: false,
-    messenger_link: '',
+    messenger_link: "",
     messenger_enabled: false,
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     async function load() {
-      const { data } = await supabase.from('site_settings').select('*').eq('id', 1).maybeSingle();
+      const { data } = await supabase
+        .from("site_settings")
+        .select("*")
+        .eq("id", 1)
+        .maybeSingle();
       if (data) {
         setForm({
-          whatsapp_number: data.whatsapp_number || '',
+          whatsapp_number: data.whatsapp_number || "",
           whatsapp_enabled: data.whatsapp_enabled,
-          messenger_link: data.messenger_link || '',
+          messenger_link: data.messenger_link || "",
           messenger_enabled: data.messenger_enabled,
         });
       }
@@ -37,12 +41,12 @@ export default function ContactSettingsManager() {
   async function handleSave(e) {
     e.preventDefault();
     setSaving(true);
-    setError('');
+    setError("");
 
     const { error } = await supabase
-      .from('site_settings')
+      .from("site_settings")
       .update({ ...form, updated_at: new Date().toISOString() })
-      .eq('id', 1);
+      .eq("id", 1);
 
     setSaving(false);
 
@@ -61,7 +65,9 @@ export default function ContactSettingsManager() {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 max-w-xl">
-      <h2 className="text-lg font-semibold text-slate-900 mb-1">Floating Contact Buttons</h2>
+      <h2 className="text-lg font-semibold text-slate-900 mb-1">
+        Floating Contact Buttons
+      </h2>
       <p className="text-sm text-slate-500 mb-6">
         Controls the WhatsApp and Messenger buttons shown on the storefront.
       </p>
@@ -72,7 +78,9 @@ export default function ContactSettingsManager() {
             <input
               type="checkbox"
               checked={form.whatsapp_enabled}
-              onChange={(e) => updateField('whatsapp_enabled', e.target.checked)}
+              onChange={(e) =>
+                updateField("whatsapp_enabled", e.target.checked)
+              }
               className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
             />
             Show WhatsApp button (bottom right)
@@ -83,7 +91,7 @@ export default function ContactSettingsManager() {
           <input
             type="text"
             value={form.whatsapp_number}
-            onChange={(e) => updateField('whatsapp_number', e.target.value)}
+            onChange={(e) => updateField("whatsapp_number", e.target.value)}
             placeholder="8801XXXXXXXXX"
             className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
@@ -94,7 +102,9 @@ export default function ContactSettingsManager() {
             <input
               type="checkbox"
               checked={form.messenger_enabled}
-              onChange={(e) => updateField('messenger_enabled', e.target.checked)}
+              onChange={(e) =>
+                updateField("messenger_enabled", e.target.checked)
+              }
               className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
             />
             Show Messenger button (bottom left)
@@ -105,7 +115,7 @@ export default function ContactSettingsManager() {
           <input
             type="text"
             value={form.messenger_link}
-            onChange={(e) => updateField('messenger_link', e.target.value)}
+            onChange={(e) => updateField("messenger_link", e.target.value)}
             placeholder="https://m.me/yourpage"
             className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
@@ -119,7 +129,7 @@ export default function ContactSettingsManager() {
           disabled={saving}
           className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-sm font-medium rounded-md transition-colors"
         >
-          {saving ? 'Saving...' : 'Save Settings'}
+          {saving ? "Saving..." : "Save Settings"}
         </button>
       </form>
     </div>

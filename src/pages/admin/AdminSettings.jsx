@@ -1,6 +1,8 @@
 import AdminLayout from "../../components/admin/AdminLayout";
 import ContactSettingsManager from "../../components/admin/ContactSettingsManager";
 import DeliveryZoneManager from "../../components/admin/Deliveryzonemanager";
+import DiscountRuleManager from "../../components/admin/Discountrulemanager";
+import FreeDeliveryManager from "../../components/admin/Freedeliverymanager";
 
 export default function AdminSettings() {
   return (
@@ -13,6 +15,8 @@ export default function AdminSettings() {
           </p>
         </div>
         <DeliveryZoneManager />
+        <FreeDeliveryManager />
+        <DiscountRuleManager />
         <ContactSettingsManager />
       </div>
     </AdminLayout>

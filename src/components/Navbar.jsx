@@ -8,9 +8,9 @@ export default function Navbar() {
     <header className="sticky top-0 z-40 bg-[#FBF8F3]/90 backdrop-blur border-b border-[#E7E0D3]">
       <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
         <nav className="hidden sm:flex items-center gap-8 text-sm text-[#4A5049]">
-          <Link to="/" className="hover:text-[#1F2A24] transition-colors">
+          {/* <Link to="/" className="hover:text-[#1F2A24] transition-colors">
             Shop
-          </Link>
+          </Link> */}
           <Link to="/track" className="hover:text-[#1F2A24] transition-colors">
             Track Order
           </Link>

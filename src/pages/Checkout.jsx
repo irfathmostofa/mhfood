@@ -10,138 +10,86 @@ import Footer from "../components/Footer";
 import FloatingContactButtons from "../components/FloatingContactButtons";
 import BackToTop from "../components/BackToTop";
 
+function pickBestDiscount(rules, subtotal) {
+  const eligible = rules.filter(
+    (r) =>
+      subtotal >= r.min_amount &&
+      (r.max_amount === null || subtotal <= r.max_amount),
+  );
+  if (eligible.length === 0) return null;
+
+  let best = null;
+  let bestAmount = 0;
+  for (const rule of eligible) {
+    const amount =
+      rule.discount_type === "percentage"
+        ? (subtotal * rule.discount_value) / 100
+        : rule.discount_value;
+    const capped = Math.min(amount, subtotal);
+    if (capped > bestAmount) {
+      bestAmount = capped;
+      best = rule;
+    }
+  }
+  return best ? { rule: best, amount: bestAmount } : null;
+}
+
 export default function Checkout() {
   const { items, totalAmount, clearCart, updateQuantity, removeItem } =
     useCart();
   const navigate = useNavigate();
 
-  // Load saved customer info from localStorage
-  const loadSavedCustomerInfo = () => {
-    try {
-      const saved = localStorage.getItem("customerInfo");
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    } catch (error) {
-      console.error("Failed to load customer info:", error);
-    }
-    return null;
-  };
-
-  const savedInfo = loadSavedCustomerInfo();
-
   const [form, setForm] = useState({
-    name: savedInfo?.name || "",
-    phone: savedInfo?.phone || "",
-    email: savedInfo?.email || "",
-    address: savedInfo?.address || "",
+    name: "",
+    phone: "",
+    email: "",
+    address: "",
   });
   const [zones, setZones] = useState([]);
-  const [zoneId, setZoneId] = useState(savedInfo?.zoneId || "");
+  const [zoneId, setZoneId] = useState("");
+  const [siteSettings, setSiteSettings] = useState(null);
+  const [discountRules, setDiscountRules] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [saveInfoChecked, setSaveInfoChecked] = useState(true);
 
   useEffect(() => {
-    async function loadZones() {
-      const { data } = await supabase
-        .from("delivery_zones")
-        .select("*")
-        .eq("is_active", true)
-        .order("sort_order", { ascending: true });
-      setZones(data || []);
+    async function loadPricingData() {
+      const [{ data: zoneData }, { data: settingsData }, { data: ruleData }] =
+        await Promise.all([
+          supabase
+            .from("delivery_zones")
+            .select("*")
+            .eq("is_active", true)
+            .order("sort_order", { ascending: true }),
+          supabase.from("site_settings").select("*").eq("id", 1).maybeSingle(),
+          supabase.from("discount_rules").select("*").eq("is_active", true),
+        ]);
 
-      // If no zone is selected and we have saved zone, try to find it
-      if (data && data.length > 0) {
-        if (savedInfo?.zoneId && data.some((z) => z.id === savedInfo.zoneId)) {
-          setZoneId(savedInfo.zoneId);
-        } else {
-          setZoneId(data[0].id);
-        }
-      }
+      setZones(zoneData || []);
+      if (zoneData && zoneData.length > 0) setZoneId(zoneData[0].id);
+      setSiteSettings(settingsData || null);
+      setDiscountRules(ruleData || []);
     }
-    loadZones();
-  }, [savedInfo]);
+    loadPricingData();
+  }, []);
 
   const selectedZone = zones.find((z) => z.id === zoneId);
-  const deliveryCharge = selectedZone ? Number(selectedZone.charge) : 0;
-  const grandTotal = totalAmount + deliveryCharge;
+  const baseDeliveryCharge = selectedZone ? Number(selectedZone.charge) : 0;
 
-  // Save customer info to localStorage instantly
-  const saveCustomerInfo = (data) => {
-    if (!saveInfoChecked) return; // Don't save if checkbox is unchecked
+  const freeDeliveryApplies =
+    siteSettings?.free_delivery_enabled &&
+    totalAmount >= Number(siteSettings.free_delivery_threshold || 0);
 
-    try {
-      localStorage.setItem("customerInfo", JSON.stringify(data));
-    } catch (error) {
-      console.error("Failed to save customer info:", error);
-    }
-  };
+  const deliveryCharge = freeDeliveryApplies ? 0 : baseDeliveryCharge;
+
+  const bestDiscount = pickBestDiscount(discountRules, totalAmount);
+  const discountAmount = bestDiscount ? bestDiscount.amount : 0;
+
+  const grandTotal = totalAmount - discountAmount + deliveryCharge;
 
   function updateField(field, value) {
-    setForm((prev) => {
-      const newForm = { ...prev, [field]: value };
-
-      // Save to localStorage instantly when field changes
-      const dataToSave = {
-        ...newForm,
-        zoneId: zoneId,
-      };
-      saveCustomerInfo(dataToSave);
-
-      return newForm;
-    });
+    setForm((prev) => ({ ...prev, [field]: value }));
   }
-
-  // Handle zone change with instant save
-  function handleZoneChange(newZoneId) {
-    setZoneId(newZoneId);
-
-    // Save to localStorage instantly when zone changes
-    const dataToSave = {
-      ...form,
-      zoneId: newZoneId,
-    };
-    saveCustomerInfo(dataToSave);
-  }
-
-  // Handle checkbox change
-  function handleSaveInfoToggle(checked) {
-    setSaveInfoChecked(checked);
-
-    if (!checked) {
-      // If unchecked, remove saved info from localStorage
-      try {
-        localStorage.removeItem("customerInfo");
-      } catch (error) {
-        console.error("Failed to remove saved info:", error);
-      }
-    } else {
-      // If checked, save current info
-      const dataToSave = {
-        ...form,
-        zoneId: zoneId,
-      };
-      saveCustomerInfo(dataToSave);
-    }
-  }
-
-  // Clear saved info
-  const clearSavedInfo = () => {
-    try {
-      localStorage.removeItem("customerInfo");
-      setForm({
-        name: "",
-        phone: "",
-        email: "",
-        address: "",
-      });
-      setZoneId(zones.length > 0 ? zones[0].id : "");
-      setSaveInfoChecked(false);
-    } catch (error) {
-      console.error("Failed to clear saved info:", error);
-    }
-  };
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -168,8 +116,9 @@ export default function Checkout() {
           address: form.address,
           total_amount: grandTotal,
           delivery_zone_id: zoneId || null,
-          delivery_zone_name: selectedZone?.name || null,
           delivery_charge: deliveryCharge,
+          discount_amount: discountAmount,
+          discount_label: bestDiscount ? bestDiscount.rule.label : null,
           status: "pending",
         })
         .select()
@@ -200,18 +149,6 @@ export default function Checkout() {
         ),
       );
 
-      // Keep the saved info if checkbox is checked, it's already saved instantly
-      // Just ensure it's saved one final time with the latest data
-      if (saveInfoChecked) {
-        saveCustomerInfo({
-          name: form.name,
-          phone: form.phone,
-          email: form.email,
-          address: form.address,
-          zoneId: zoneId,
-        });
-      }
-
       // Fire confirmation emails (customer + admin) — non-blocking for the redirect
       notifyOrderPlaced({
         toEmail: form.email,
@@ -219,8 +156,10 @@ export default function Checkout() {
         phone: form.phone,
         address: form.address,
         trackingCode,
-        delivery: selectedZone ? selectedZone.name+`-(${deliveryCharge})` : "N/A",
         items,
+        delivery: selectedZone
+          ? `${selectedZone.name} (${freeDeliveryApplies ? "FREE" : `৳${deliveryCharge}`})`
+          : "N/A",
         totalAmount: grandTotal,
       }).catch(() => {
         // Order is already placed successfully even if the email fails
@@ -335,12 +274,35 @@ export default function Checkout() {
                 <span>Subtotal</span>
                 <span>৳{totalAmount.toFixed(2)}</span>
               </div>
+
+              {bestDiscount && (
+                <div className="flex items-center justify-between text-sm text-emerald-600">
+                  <span>{bestDiscount.rule.label}</span>
+                  <span>−৳{discountAmount.toFixed(2)}</span>
+                </div>
+              )}
+
               <div className="flex items-center justify-between text-sm text-[#4A5049]">
                 <span>
                   Delivery{selectedZone ? ` (${selectedZone.name})` : ""}
                 </span>
-                <span>৳{deliveryCharge.toFixed(2)}</span>
+                {freeDeliveryApplies ? (
+                  <span className="text-emerald-600 font-medium">FREE</span>
+                ) : (
+                  <span>৳{deliveryCharge.toFixed(2)}</span>
+                )}
               </div>
+
+              {siteSettings?.free_delivery_enabled && !freeDeliveryApplies && (
+                <p className="text-xs text-[#8A8578]">
+                  Add ৳
+                  {(
+                    Number(siteSettings.free_delivery_threshold) - totalAmount
+                  ).toFixed(2)}{" "}
+                  more for free delivery
+                </p>
+              )}
+
               <div className="flex items-center justify-between pt-2 border-t border-[#E7E0D3]">
                 <p className="text-sm font-semibold text-[#1F2A24]">Total</p>
                 <p className="text-lg font-semibold text-[#C77B4C]">
@@ -356,21 +318,6 @@ export default function Checkout() {
               onSubmit={handleSubmit}
               className="space-y-4 bg-white border border-[#E7E0D3] rounded-2xl p-6"
             >
-              {savedInfo && saveInfoChecked && (
-                <div className="bg-[#F3EEE2] border border-[#E7E0D3] rounded-lg px-3 py-2 mb-2 flex items-center justify-between">
-                  <span className="text-xs text-[#1F2A24]">
-                    📋 Auto-saving your information
-                  </span>
-                  <button
-                    type="button"
-                    onClick={clearSavedInfo}
-                    className="text-xs text-[#C77B4C] hover:underline"
-                  >
-                    Clear saved info
-                  </button>
-                </div>
-              )}
-
               <div>
                 <label className="block text-sm font-medium text-[#1F2A24] mb-1">
                   Full Name
@@ -381,7 +328,6 @@ export default function Checkout() {
                   value={form.name}
                   onChange={(e) => updateField("name", e.target.value)}
                   className="w-full px-3 py-2.5 border border-[#E7E0D3] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1F2A24]/20 focus:border-[#1F2A24]"
-                  placeholder="Enter your full name"
                 />
               </div>
 
@@ -395,7 +341,6 @@ export default function Checkout() {
                   value={form.phone}
                   onChange={(e) => updateField("phone", e.target.value)}
                   className="w-full px-3 py-2.5 border border-[#E7E0D3] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1F2A24]/20 focus:border-[#1F2A24]"
-                  placeholder="Enter your phone number"
                 />
               </div>
 
@@ -409,13 +354,11 @@ export default function Checkout() {
                   value={form.email}
                   onChange={(e) => updateField("email", e.target.value)}
                   className="w-full px-3 py-2.5 border border-[#E7E0D3] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1F2A24]/20 focus:border-[#1F2A24]"
-                  placeholder="Enter your email address"
                 />
                 <p className="text-xs text-[#8A8578] mt-1">
                   We'll send your order confirmation and tracking code here.
                 </p>
               </div>
-
               {zones.length > 0 && (
                 <div>
                   <label className="block text-sm font-medium text-[#1F2A24] mb-1">
@@ -435,7 +378,15 @@ export default function Checkout() {
                   >
                     {zones.map((zone) => (
                       <option key={zone.id} value={zone.id}>
-                        {zone.name} — ৳{Number(zone.charge).toFixed(2)}
+                        {zone.name} —{" "}
+                        {freeDeliveryApplies ? (
+                          <span className="text-emerald-600 font-medium">
+                            FREE
+                          </span>
+                        ) : (
+                          `৳${zone.charge}`
+                        )}
+                        {/* ৳{Number(zone.charge).toFixed(2)} */}
                       </option>
                     ))}
                   </select>
@@ -457,20 +408,6 @@ export default function Checkout() {
                   placeholder="House, road, area — full address within your selected delivery zone"
                   className="w-full px-3 py-2.5 border border-[#E7E0D3] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1F2A24]/20 focus:border-[#1F2A24]"
                 />
-              </div>
-
-              {/* Save info checkbox */}
-              <div className="flex items-start gap-2">
-                <input
-                  type="checkbox"
-                  id="saveInfo"
-                  checked={saveInfoChecked}
-                  onChange={(e) => handleSaveInfoToggle(e.target.checked)}
-                  className="mt-1 text-[#1F2A24] focus:ring-[#1F2A24] rounded border-[#E7E0D3]"
-                />
-                <label htmlFor="saveInfo" className="text-xs text-[#4A5049]">
-                  Auto-save my information for faster checkout next time
-                </label>
               </div>
 
               {error && (

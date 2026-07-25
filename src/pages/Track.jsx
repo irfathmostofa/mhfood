@@ -1,3 +1,4 @@
+// new
 import { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
@@ -196,21 +197,39 @@ export default function Track() {
                     <span>৳{(item.price * item.quantity).toFixed(2)}</span>
                   </li>
                 ))}
-                {order.delivery_charge > 0 && (
-                  <li className="flex justify-between text-sm text-[#4A5049]">
-                    <span>
-                      Delivery
-                      {order.delivery_zone_name
-                        ? ` (${order.delivery_zone_name})`
-                        : ""}
-                    </span>
-                    <span>৳{Number(order.delivery_charge).toFixed(2)}</span>
-                  </li>
-                )}
               </ul>
-              <div className="flex justify-between text-sm font-semibold text-[#1F2A24] border-t border-[#E7E0D3] pt-3">
-                <span>Total</span>
-                <span>৳{order.total_amount}</span>
+              <div className="space-y-1.5 border-t border-[#E7E0D3] pt-3">
+                <div className="flex justify-between text-sm text-[#4A5049]">
+                  <span>Subtotal</span>
+                  <span>
+                    ৳
+                    {(
+                      Number(order.total_amount) -
+                      Number(order.delivery_charge || 0) +
+                      Number(order.discount_amount || 0)
+                    ).toFixed(2)}
+                  </span>
+                </div>
+                {Number(order.discount_amount) > 0 && (
+                  <div className="flex justify-between text-sm text-emerald-600">
+                    <span>{order.discount_label || "Discount"}</span>
+                    <span>−৳{Number(order.discount_amount).toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-sm text-[#4A5049]">
+                  <span>Delivery</span>
+                  <span>
+                    {Number(order.delivery_charge) === 0 ? (
+                      <span className="text-emerald-600 font-medium">FREE</span>
+                    ) : (
+                      `৳${Number(order.delivery_charge || 0).toFixed(2)}`
+                    )}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm font-semibold text-[#1F2A24] border-t border-[#E7E0D3] pt-2">
+                  <span>Total</span>
+                  <span>৳{order.total_amount}</span>
+                </div>
               </div>
             </div>
 

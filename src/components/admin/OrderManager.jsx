@@ -24,6 +24,18 @@ const STATUS_COLORS = {
 
 const PAGE_SIZE = 10;
 
+// Builds a readable "Zone Name (৳charge)" string, or "N/A" if there's no
+// zone/charge to show (e.g. free delivery or no zone selected).
+function formatDelivery(order) {
+  const zoneName = order.delivery_zones?.name;
+  const charge = order.delivery_charge;
+
+  if (!zoneName && !charge) return "N/A";
+  if (zoneName && charge === 0) return `${zoneName} (FREE)`;
+  if (zoneName) return `${zoneName} (৳${charge})`;
+  return `৳${charge}`;
+}
+
 export default function OrderManager() {
   const [orders, setOrders] = useState([]);
   const [expandedId, setExpandedId] = useState(null);
@@ -39,7 +51,9 @@ export default function OrderManager() {
 
     let query = supabase
       .from("orders")
-      .select("*", { count: "exact" })
+      // Join delivery_zones so we get the real zone name, not a
+      // non-existent delivery_zone_name column.
+      .select("*, delivery_zones(name)", { count: "exact" })
       .order("created_at", { ascending: false });
 
     if (filter !== "all") {
@@ -109,9 +123,7 @@ export default function OrderManager() {
           toEmail: order.email,
           customerName: order.customer_name,
           trackingCode: order.tracking_code,
-          delivery: order.delivery_zone_name
-            ? `${order.delivery_zone_name}-(${order.delivery_charge})`
-            : "N/A",
+          delivery: formatDelivery(order),
           orderId: order.id,
           items,
         });
@@ -203,13 +215,17 @@ export default function OrderManager() {
                       ))}
                     </ul>
 
-                    {order.delivery_charge > 0 && (
-                      <p className="text-sm text-slate-500 mb-4">
-                        Delivery
-                        {order.delivery_zone_name
-                          ? ` (${order.delivery_zone_name})`
-                          : ""}
-                        : ৳{order.delivery_charge}
+                    {(order.delivery_charge > 0 ||
+                      order.delivery_zones?.name) && (
+                      <p className="text-sm text-slate-500 mb-1">
+                        Delivery: {formatDelivery(order)}
+                      </p>
+                    )}
+
+                    {order.discount_amount > 0 && (
+                      <p className="text-sm text-emerald-600 mb-4">
+                        {order.discount_label || "Discount"}: -৳
+                        {order.discount_amount}
                       </p>
                     )}
 
