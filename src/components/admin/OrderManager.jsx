@@ -190,8 +190,11 @@ export default function OrderManager() {
                       {order.customer_name} — {order.tracking_code}
                     </p>
                     <p className="text-xs text-slate-400">
-                      {order.phone} · ৳{order.total_amount} ·{" "}
-                      {new Date(order.created_at).toLocaleString()}
+                      {order.phone} ·{" "}
+                      <b className="font-bold text-amber-700">
+                        ৳{order.total_amount}
+                      </b>{" "}
+                      · {new Date(order.created_at).toLocaleString()}
                     </p>
                   </div>
                   <span
