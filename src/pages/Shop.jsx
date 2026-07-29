@@ -148,35 +148,6 @@ export default function Shop() {
   const filterPanel = (
     <div className="space-y-6">
       <div>
-        <h3 className="text-sm font-semibold text-[#1F2A24] mb-3">Category</h3>
-        <div className="flex flex-col gap-1">
-          <button
-            onClick={() => setActiveCategory("all")}
-            className={`text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-              activeCategory === "all"
-                ? "bg-[#1F2A24] text-[#FBF8F3]"
-                : "text-[#4A5049] hover:bg-[#F3EEE2]"
-            }`}
-          >
-            All Products
-          </button>
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.id)}
-              className={`text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                activeCategory === cat.id
-                  ? "bg-[#1F2A24] text-[#FBF8F3]"
-                  : "text-[#4A5049] hover:bg-[#F3EEE2]"
-              }`}
-            >
-              {cat.name}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div>
         <h3 className="text-sm font-semibold text-[#1F2A24] mb-3">
           Price Range (৳)
         </h3>
@@ -213,6 +184,34 @@ export default function Shop() {
           />
           In stock only
         </label>
+      </div>
+      <div>
+        <h3 className="text-sm font-semibold text-[#1F2A24] mb-3">Category</h3>
+        <div className="flex flex-col gap-1">
+          <button
+            onClick={() => setActiveCategory("all")}
+            className={`text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+              activeCategory === "all"
+                ? "bg-[#1F2A24] text-[#FBF8F3]"
+                : "text-[#4A5049] hover:bg-[#F3EEE2]"
+            }`}
+          >
+            All Products
+          </button>
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setActiveCategory(cat.id)}
+              className={`text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                activeCategory === cat.id
+                  ? "bg-[#1F2A24] text-[#FBF8F3]"
+                  : "text-[#4A5049] hover:bg-[#F3EEE2]"
+              }`}
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
       </div>
 
       {activeFilterCount > 0 && (
