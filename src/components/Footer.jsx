@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 export default function Footer() {
   return (
     <footer className="border-t border-[#E7E0D3] mt-16 py-8">
-      <div className="max-w-6xl mx-auto px-5 text-sm text-[#8A8578] flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
+      <div className="max-w-7xl mx-auto px-5 text-sm text-[#8A8578] flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
         <span>© {new Date().getFullYear()} MHFood</span>
         <div className="flex gap-4">
           <Link

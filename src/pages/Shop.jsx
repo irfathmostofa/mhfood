@@ -232,7 +232,7 @@ export default function Shop() {
       <FloatingContactButtons />
       <BackToTop />
 
-      <main className="max-w-6xl mx-auto px-5 py-8">
+      <main className="max-w-7xl mx-auto px-5 py-8">
         <div className="flex items-center justify-between gap-4 mb-2 flex-wrap">
           <h1
             className="text-2xl sm:text-3xl text-[#1F2A24]"

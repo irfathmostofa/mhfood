@@ -45,7 +45,7 @@ export default function HeroSlider() {
           />
           {(s.title || s.subtitle) && (
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent flex items-end">
-              <div className="max-w-6xl mx-auto w-full px-5 sm:px-10 pb-8 sm:pb-12">
+              <div className="max-w-7xl mx-auto w-full px-5 sm:px-10 pb-8 sm:pb-12">
                 <div className="text-white max-w-lg">
                   {s.title && (
                     <h2
