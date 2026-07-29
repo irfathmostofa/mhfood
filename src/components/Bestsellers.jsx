@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import ProductCard from "./ProductCard";
 
@@ -117,7 +117,16 @@ export default function BestSellers() {
 
   // Re-align the strip to the start (real slide 0) whenever the product set
   // or items-per-view changes — instantly, with no visible transition.
-  useEffect(() => {
+  //
+  // This MUST be a layout effect, not a regular effect. A regular effect
+  // runs after the browser has already painted, which meant that whenever
+  // itemsPerView changed (e.g. resizing across a breakpoint), one frame
+  // rendered with the OLD track value against the NEW slideWidth/slides —
+  // pointing translateX at an offset that didn't match any real slide,
+  // which exposed blank white space for a frame. useLayoutEffect runs
+  // synchronously before paint, so the correction lands before anything
+  // is drawn and the flash never happens.
+  useLayoutEffect(() => {
     setTransitionEnabled(false);
     setTrack(loopEnabled ? itemsPerView : 0);
     const raf1 = requestAnimationFrame(() => {
