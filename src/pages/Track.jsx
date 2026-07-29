@@ -79,7 +79,7 @@ export default function Track() {
       <FloatingContactButtons />
       <BackToTop />
 
-      <main className="max-w-2xl mx-auto px-5 py-12">
+      <main className="max-w-4xl mx-auto px-5 py-12">
         {justPlaced && (
           <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm rounded-xl px-5 py-4 mb-8">
             Your order has been placed! A confirmation email is on its way —

@@ -3,6 +3,7 @@ import { supabase } from "../lib/supabaseClient";
 import ProductCard from "./ProductCard";
 
 const LIMIT = 12;
+const AUTOPLAY_MS = 4000;
 
 function getItemsPerView() {
   if (typeof window === "undefined") return 4;
@@ -16,7 +17,10 @@ export default function BestSellers() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [itemsPerView, setItemsPerView] = useState(getItemsPerView);
-  const [index, setIndex] = useState(0);
+
+  // `track` is the slide index in the padded/cloned strip's own coordinates.
+  const [track, setTrack] = useState(0);
+  const [transitionEnabled, setTransitionEnabled] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
   const [resetKey, setResetKey] = useState(0);
   const touchStartX = useRef(null);
@@ -109,29 +113,61 @@ export default function BestSellers() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const maxIndex = Math.max(0, products.length - itemsPerView);
+  const loopEnabled = products.length > itemsPerView;
 
-  // Clamp index whenever the viewport or product count changes
+  // Re-align the strip to the start (real slide 0) whenever the product set
+  // or items-per-view changes — instantly, with no visible transition.
   useEffect(() => {
-    setIndex((i) => Math.min(i, maxIndex));
-  }, [maxIndex]);
+    setTransitionEnabled(false);
+    setTrack(loopEnabled ? itemsPerView : 0);
+    const raf1 = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setTransitionEnabled(true));
+    });
+    return () => cancelAnimationFrame(raf1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [products, itemsPerView, loopEnabled]);
 
-  // Auto-advance, looping back to the start; pauses on hover/touch/manual nav
+  // Auto-advance forever; pauses on hover/touch/manual nav
   useEffect(() => {
-    if (maxIndex <= 0 || isPaused) return;
+    if (!loopEnabled || isPaused) return;
     const timer = setInterval(() => {
-      setIndex((i) => (i >= maxIndex ? 0 : i + 1));
-    }, 4000);
+      setTransitionEnabled(true);
+      setTrack((t) => t + 1);
+    }, AUTOPLAY_MS);
     return () => clearInterval(timer);
-  }, [maxIndex, isPaused, resetKey]);
+  }, [loopEnabled, isPaused, resetKey]);
+
+  // Once a clone has fully scrolled into view, snap back to the matching
+  // real slide with no transition — since the clone is visually identical,
+  // the snap is invisible and the motion reads as continuous.
+  function handleTransitionEnd() {
+    if (!loopEnabled) return;
+    if (track >= itemsPerView + products.length) {
+      snapTo(track - products.length);
+    } else if (track < itemsPerView) {
+      snapTo(track + products.length);
+    }
+  }
+
+  function snapTo(newTrack) {
+    setTransitionEnabled(false);
+    setTrack(newTrack);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => setTransitionEnabled(true));
+    });
+  }
 
   function goPrev() {
-    setIndex((i) => Math.max(0, i - 1));
+    if (!loopEnabled) return;
+    setTransitionEnabled(true);
+    setTrack((t) => t - 1);
     setResetKey((k) => k + 1);
   }
 
   function goNext() {
-    setIndex((i) => Math.min(maxIndex, i + 1));
+    if (!loopEnabled) return;
+    setTransitionEnabled(true);
+    setTrack((t) => t + 1);
     setResetKey((k) => k + 1);
   }
 
@@ -154,9 +190,23 @@ export default function BestSellers() {
 
   if (!loading && products.length === 0) return null;
 
-  const canPrev = index > 0;
-  const canNext = index < maxIndex;
   const slideWidth = 100 / itemsPerView;
+
+  // Pad the strip with clones of the tail/head so sliding past either end
+  // keeps revealing real-looking cards instead of jumping.
+  const slides = loopEnabled
+    ? [
+        ...products
+          .slice(-itemsPerView)
+          .map((p, i) => ({ product: p, key: `head-clone-${i}` })),
+        ...products.map((p) => ({ product: p, key: p.id })),
+        ...products
+          .slice(0, itemsPerView)
+          .map((p, i) => ({ product: p, key: `tail-clone-${i}` })),
+      ]
+    : products.map((p) => ({ product: p, key: p.id }));
+
+  const rankById = new Map(products.map((p, i) => [p.id, i]));
 
   return (
     <section className="max-w-7xl mx-auto px-5 py-8">
@@ -173,13 +223,12 @@ export default function BestSellers() {
           </p>
         </div>
 
-        {!loading && products.length > itemsPerView && (
+        {!loading && loopEnabled && (
           <div className="hidden sm:flex items-center gap-2">
             <button
               onClick={goPrev}
-              disabled={!canPrev}
               aria-label="Previous"
-              className="p-2 rounded-full border border-[#E7E0D3] text-[#1F2A24] hover:border-[#1F2A24] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-[#E7E0D3] transition-colors"
+              className="p-2 rounded-full border border-[#E7E0D3] text-[#1F2A24] hover:border-[#1F2A24] transition-colors"
             >
               <svg
                 width="18"
@@ -198,9 +247,8 @@ export default function BestSellers() {
             </button>
             <button
               onClick={goNext}
-              disabled={!canNext}
               aria-label="Next"
-              className="p-2 rounded-full border border-[#E7E0D3] text-[#1F2A24] hover:border-[#1F2A24] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-[#E7E0D3] transition-colors"
+              className="p-2 rounded-full border border-[#E7E0D3] text-[#1F2A24] hover:border-[#1F2A24] transition-colors"
             >
               <svg
                 width="18"
@@ -235,34 +283,37 @@ export default function BestSellers() {
             onTouchEnd={handleTouchEnd}
           >
             <div
-              className="flex transition-transform duration-500 ease-out"
-              style={{ transform: `translateX(-${index * slideWidth}%)` }}
+              className={`flex ${transitionEnabled ? "transition-transform duration-500 ease-out" : ""}`}
+              style={{ transform: `translateX(-${track * slideWidth}%)` }}
+              onTransitionEnd={handleTransitionEnd}
             >
-              {products.map((product, i) => (
-                <div
-                  key={product.id}
-                  className="relative shrink-0 px-1.5 sm:px-2.5"
-                  style={{ width: `${slideWidth}%` }}
-                >
-                  {i < 3 && (
-                    <span className="absolute top-2 left-3.5 sm:left-4.5 z-10 px-2 py-0.5 rounded-full bg-[#C77B4C] text-white text-[10px] font-semibold shadow">
-                      #{i + 1} Best Seller
-                    </span>
-                  )}
-                  <ProductCard product={product} />
-                </div>
-              ))}
+              {slides.map(({ product, key }) => {
+                const rank = rankById.get(product.id);
+                return (
+                  <div
+                    key={key}
+                    className="relative shrink-0 px-1.5 sm:px-2.5"
+                    style={{ width: `${slideWidth}%` }}
+                  >
+                    {rank < 3 && (
+                      <span className="absolute top-2 left-3.5 sm:left-4.5 z-10 px-2 py-0.5 rounded-full bg-[#C77B4C] text-white text-[10px] font-semibold shadow">
+                        #{rank + 1} Best Seller
+                      </span>
+                    )}
+                    <ProductCard product={product} />
+                  </div>
+                );
+              })}
             </div>
           </div>
 
-          {/* Mobile prev/next — overlaid on the edges since arrows above are desktop-only */}
-          {products.length > itemsPerView && (
+          {/* Mobile prev/next — overlaid below since arrows above are desktop-only */}
+          {loopEnabled && (
             <div className="sm:hidden flex items-center justify-center gap-3 mt-4">
               <button
                 onClick={goPrev}
-                disabled={!canPrev}
                 aria-label="Previous"
-                className="p-2 rounded-full border border-[#E7E0D3] text-[#1F2A24] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="p-2 rounded-full border border-[#E7E0D3] text-[#1F2A24] transition-colors"
               >
                 <svg
                   width="18"
@@ -281,9 +332,8 @@ export default function BestSellers() {
               </button>
               <button
                 onClick={goNext}
-                disabled={!canNext}
                 aria-label="Next"
-                className="p-2 rounded-full border border-[#E7E0D3] text-[#1F2A24] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="p-2 rounded-full border border-[#E7E0D3] text-[#1F2A24] transition-colors"
               >
                 <svg
                   width="18"

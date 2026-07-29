@@ -6,7 +6,6 @@ import { notifyOrderPlaced } from "../lib/emailjs";
 import { sendOrderPlacedSMS } from "../lib/sms";
 import { generateTrackingCode } from "../utils/trackingCode";
 import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
 import FloatingContactButtons from "../components/FloatingContactButtons";
 import BackToTop from "../components/BackToTop";
 
@@ -197,7 +196,6 @@ export default function Checkout() {
             Continue shopping
           </a>
         </div>
-        <Footer />
       </div>
     );
   }
@@ -207,8 +205,7 @@ export default function Checkout() {
       <Navbar />
       <FloatingContactButtons />
       <BackToTop />
-
-      <main className="max-w-4xl mx-auto px-5 py-8">
+      <div className="max-w-6xl mx-auto px-5 py-8">
         <h1
           className="text-2xl sm:text-3xl text-[#1F2A24] mb-8"
           style={{ fontFamily: "'Fraunces', Georgia, serif" }}
@@ -366,7 +363,7 @@ export default function Checkout() {
                   </label>
                   <select
                     value={zoneId}
-                    onChange={(e) => handleZoneChange(e.target.value)}
+                    onChange={(e) => setZoneId(e.target.value)}
                     className="w-full px-3 py-2.5 border border-[#E7E0D3] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1F2A24]/20 focus:border-[#1F2A24] bg-white appearance-none"
                     style={{
                       backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E")`,
@@ -379,14 +376,9 @@ export default function Checkout() {
                     {zones.map((zone) => (
                       <option key={zone.id} value={zone.id}>
                         {zone.name} —{" "}
-                        {freeDeliveryApplies ? (
-                          <span className="text-emerald-600 font-medium">
-                            FREE
-                          </span>
-                        ) : (
-                          `৳${zone.charge}`
-                        )}
-                        {/* ৳{Number(zone.charge).toFixed(2)} */}
+                        {freeDeliveryApplies
+                          ? "FREE"
+                          : `৳${Number(zone.charge).toFixed(2)}`}
                       </option>
                     ))}
                   </select>
@@ -428,8 +420,7 @@ export default function Checkout() {
             </form>
           </div>
         </div>
-      </main>
-      <Footer />
+      </div>
     </div>
   );
 }
