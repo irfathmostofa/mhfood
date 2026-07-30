@@ -52,7 +52,7 @@ export default function Footer() {
               rel="noopener noreferrer"
               className="relative group text-sm text-[#8A8578] hover:text-[#1F2A24] transition-colors"
             >
-              Irfath Chowdhury
+              Md. Irfath Chowdhury
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-600 transition-all duration-300 group-hover:w-full" />
             </a>
           </div>

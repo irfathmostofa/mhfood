@@ -40,6 +40,7 @@ export default function DashboardStats() {
         { data: revenueRows },
         { data: recent },
         { data: lowStock },
+        { data: phoneRows },
       ] = await Promise.all([
         supabase.from("orders").select("*", { count: "exact", head: true }),
         supabase
@@ -81,12 +82,16 @@ export default function DashboardStats() {
           .lte("stock", LOW_STOCK_THRESHOLD)
           .order("stock", { ascending: true })
           .limit(6),
+        supabase.from("orders").select("phone"),
       ]);
 
       const revenue = (revenueRows || []).reduce(
         (sum, o) => sum + Number(o.total_amount || 0),
         0,
       );
+      const customerCount = new Set(
+        (phoneRows || []).map((o) => o.phone).filter(Boolean),
+      ).size;
 
       setStats({
         totalOrders: totalOrders || 0,
@@ -97,6 +102,7 @@ export default function DashboardStats() {
         productCount: productCount || 0,
         categoryCount: categoryCount || 0,
         lowStockCount: lowStockCount || 0,
+        customerCount,
         revenue,
       });
       setRecentOrders(recent || []);
@@ -118,6 +124,11 @@ export default function DashboardStats() {
       value: stats.pendingCount + stats.confirmedCount + stats.outCount,
       link: "/admin/orders",
     },
+    {
+      label: "Customers",
+      value: stats.customerCount,
+      link: "/admin/customers",
+    },
     { label: "Products", value: stats.productCount, link: "/admin/products" },
     {
       label: "Delivered Revenue",
@@ -134,7 +145,7 @@ export default function DashboardStats() {
 
   return (
     <div className="space-y-8">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         {cards.map((card) => (
           <Link
             key={card.label}

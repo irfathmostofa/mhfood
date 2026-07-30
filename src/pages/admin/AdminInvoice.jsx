@@ -151,6 +151,9 @@ export default function AdminInvoice() {
         <p className="text-center text-xs text-slate-500">
           Thank you for your order!
         </p>
+        <p className="text-center text-xs text-slate-500">
+          Built by Md. Irfath Chowdhury
+        </p>
       </div>
     </div>
   );

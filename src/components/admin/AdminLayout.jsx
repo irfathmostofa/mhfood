@@ -7,6 +7,7 @@ const navItems = [
   { to: "/admin/products", label: "Products" },
   { to: "/admin/slider", label: "Hero Slider" },
   { to: "/admin/orders", label: "Orders" },
+  { to: "/admin/customers", label: "Customers" },
   { to: "/admin/settings", label: "Settings" },
   { to: "/", label: "Visit Website" },
 ];

@@ -1,22 +1,23 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { CartProvider } from './hooks/useCart';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { CartProvider } from "./hooks/useCart";
 
-import Landing from './pages/Landing';
-import Shop from './pages/Shop';
-import ProductPage from './pages/ProductPage';
-import Checkout from './pages/Checkout';
-import Track from './pages/Track';
-import Review from './pages/Review';
+import Landing from "./pages/Landing";
+import Shop from "./pages/Shop";
+import ProductPage from "./pages/ProductPage";
+import Checkout from "./pages/Checkout";
+import Track from "./pages/Track";
+import Review from "./pages/Review";
 
-import AdminLogin from './pages/admin/AdminLogin';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import AdminProducts from './pages/admin/AdminProducts';
-import AdminSlider from './pages/admin/AdminSlider';
-import AdminOrders from './pages/admin/AdminOrders';
-import AdminSettings from './pages/admin/AdminSettings';
-import AdminInvoice from './pages/admin/AdminInvoice';
-import ProtectedRoute from './components/admin/ProtectedRoute';
-import CartDrawer from './components/CartDrawer';
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminProducts from "./pages/admin/AdminProducts";
+import AdminSlider from "./pages/admin/AdminSlider";
+import AdminOrders from "./pages/admin/AdminOrders";
+import AdminSettings from "./pages/admin/AdminSettings";
+import AdminInvoice from "./pages/admin/AdminInvoice";
+import ProtectedRoute from "./components/admin/ProtectedRoute";
+import CartDrawer from "./components/CartDrawer";
+import AdminCustomers from "./pages/admin/Admincustomers";
 
 export default function App() {
   return (
@@ -64,6 +65,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <AdminOrders />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/customers"
+            element={
+              <ProtectedRoute>
+                <AdminCustomers />
               </ProtectedRoute>
             }
           />
