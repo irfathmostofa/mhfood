@@ -188,7 +188,7 @@ export default function Checkout() {
     return (
       <div className="min-h-screen bg-[#FBF8F3]">
         <Navbar />
-        <FloatingContactButtons />
+        {/* <FloatingContactButtons /> */}
         <BackToTop />
         <div className="text-center py-24">
           <p className="text-lg text-[#1F2A24] mb-2">Your cart is empty</p>
