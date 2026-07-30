@@ -14,10 +14,12 @@ export default function AdminSettings() {
             Site-wide configuration for the storefront.
           </p>
         </div>
-        <DeliveryZoneManager />
-        <FreeDeliveryManager />
-        <DiscountRuleManager />
-        <ContactSettingsManager />
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <DeliveryZoneManager />
+          <FreeDeliveryManager />
+          <DiscountRuleManager />
+          <ContactSettingsManager />
+        </div>
       </div>
     </AdminLayout>
   );

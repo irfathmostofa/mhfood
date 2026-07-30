@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabaseClient";
 
 export default function FloatingContactButtons() {
   const [settings, setSettings] = useState(null);
@@ -7,9 +7,9 @@ export default function FloatingContactButtons() {
   useEffect(() => {
     async function load() {
       const { data } = await supabase
-        .from('site_settings')
-        .select('*')
-        .eq('id', 1)
+        .from("site_settings")
+        .select("*")
+        .eq("id", 1)
         .maybeSingle();
       setSettings(data);
     }

@@ -6,7 +6,7 @@ import { notifyOrderPlaced } from "../lib/emailjs";
 import { sendOrderPlacedSMS } from "../lib/sms";
 import { generateTrackingCode } from "../utils/trackingCode";
 import Navbar from "../components/Navbar";
-import FloatingContactButtons from "../components/FloatingContactButtons";
+// import FloatingContactButtons from "../components/FloatingContactButtons";
 import BackToTop from "../components/BackToTop";
 
 function pickBestDiscount(rules, subtotal) {
@@ -203,7 +203,7 @@ export default function Checkout() {
   return (
     <div className="min-h-screen bg-[#FBF8F3]">
       <Navbar />
-      <FloatingContactButtons />
+      {/* <FloatingContactButtons /> */}
       <BackToTop />
       <div className="max-w-6xl mx-auto px-5 py-8">
         <h1
