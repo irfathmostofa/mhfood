@@ -192,8 +192,7 @@ export default function DashboardStats() {
           ))}
         </div>
       </div>
-
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
+<div className="grid sm:grid-cols-2  grid-cols-1 gap-2"><div className="bg-white rounded-xl border border-slate-200 p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-semibold text-slate-900">
             Recent Orders
@@ -268,7 +267,8 @@ export default function DashboardStats() {
             </li>
           )}
         </ul>
-      </div>
+      </div></div>
+      
     </div>
   );
 }
